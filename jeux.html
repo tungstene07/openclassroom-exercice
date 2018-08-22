@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<style>
+		h1{
+			text-align: center;
+		}
+		#ecran, #banniere{
+			display: flex;
+			justify-content: space-between;
+		}
+		.cellule{
+			border: solid 1px black;
+			width: 25px;
+			height: 25px;
+		}
+		.joueur1{
+			background-color: black;
+			color: white;
+		}
+
+		.joueur2{
+			background-color: orange;
+			color:white;
+		}
+
+		#gauche{
+			color: black;
+			font-weight: bold;
+
+		}
+		#droit{
+			color: orange;
+			font-weight: bold;
+		}
+
+		.jouable{
+			background-color: gray;
+		}
+
+		.rose {
+			background-color: DeepPink;
+		}
+
+		.bleue {
+			background-color: SlateBlue;
+		}
+
+	</style>
+</head>
+
+
+<body>
+	<h1>Jeux tour par tour en js </h1>
+	<br>
+	<p>But du jeux, attrapper le plus de cases roses possible</p>
+	<div id="banniere">
+		<div id="positionJ1">Positions joueur 1 : </div><div id="positionJ2">Positions joueur 2 : </div>
+	</div>
+	<br>
+	<div id="ecran">
+		<div id="gauche">Joueur 1 <button id="joueur1">Joueur1</button><p>Score : </p><div id="score1"></div></div>
+		<div id="centre"><table id="plateau"></table></div>
+		<div id="droit">Joueur 2 <button id="joueur2">Joueur2</button><p>Score : </p><div id="score2"></div></div>
+	</div>
+
+
+<script src="http://code.jquery.com/jquery.min.js"></script>
+
+
+<script>
+	$(function() {
+
+		// temps de developpement -------------------  15h30---------------------------------------------
+
+
+// definition des variables --------------------------------------------
+
+
+		var cel = 0; // numero de cellule
+
+		joueur1.position = 0; // position du joueur 1
+		joueur1.score = 0;
+
+
+		joueur2.position = 0; //position du joueur 2
+		joueur2.score = 0;
+
+
+		tourDuJoueur = 0; // indique quel joueur est en train de jouer
+		positionJ1 = '';
+		positionJ2 = '';
+
+		ordre = ''; // ordre pour stoper la boucle de création de cases grises jouables
+
+		fin = 'non'; // variable pour savoir si c'est la fin du jeux
+
+// defintion des fonctions ---------------------------------------------
+//----------------------------------------------------------------------
+
+
+// fonction d'initialisation ------------------------------------------
+
+		function positionementJoueur (){
+			position = Math.floor((Math.random() * 100) + 1); // retourne un nombre au hazard entre 1  et 100
+			return position;
+		}
+
+		
+		function testPosition(){ // fonction test de la position du joueur2.position pour etre sur qu'elle ne soit pas contigue à joueur1
+			if ((joueur2.position != joueur1.position) && (joueur2.position != (joueur1.position - 9)) && (joueur2.position != (joueur1.position - 10)) && (joueur2.position != (joueur1.position - 11)) && (joueur2.position != (joueur1.position - 1)) && (joueur2.position != (joueur1.position + 1))&& (joueur2.position != (joueur1.position + 9)) && (joueur2.position != (joueur1.position + 10)) && (joueur2.position != (joueur1.position + 11))){
+			$('#cel'+joueur2.position).attr('class' , 'joueur2'); 
+			}
+			else { // sinon on relance la positionnement
+				//alert(' joueur1.position à ' + joueur1.position +' et joueur2.position à ' + joueur2.position + ' je recommence le positionement'); // debug
+				joueur2.position = positionementJoueur();
+				testPosition();
+			}
+		}
+
+
+
+// fonction affichage ------------------------------------------------------
+
+
+			$('#banniere').hide();
+
+			function affichePositions1(){ //affiche la position du joueur 1
+				positionJ1 = $('#positionJ1').text();
+				positionJ1 += ( ' ' + joueur1.position); // concatene les positions
+				$('#positionJ1').text(positionJ1); // affiche les positions prises pour debug
+				//alert(joueur1.position);
+			}
+
+
+			function affichePositions2(){ // affiche la position du joueur 2
+				positionJ2 = $('#positionJ2').text();
+				positionJ2 += ( ' ' + joueur2.position); // concatene les positions
+				$('#positionJ2').text(positionJ2); // affiche les positions prises pour debug
+				//alert(joueur2.position);
+			}
+
+			function affichePositionsRoses(){
+				$('#cel' + caseRose).addClass('rose');
+			}
+
+			function affichePositionsBleues(){
+				$('#cel' + caseBleue).addClass('bleue');
+			}
+
+// fonction de creation des positions des cases ---------------------------------------------------------
+
+
+			function creationCasesRoses(){ // creation des positions des  cases roses
+				caseRose = positionementJoueur();
+				//alert(caseRose);
+				if ((caseRose != joueur1.position) && (caseRose != joueur2.position) && ($('#cel'+caseRose).attr('class') != 'cellule rose')){ // test pour etre sur qu'elles ne sont pas sur un joueur ou sur une case deja rose
+					affichePositionsRoses(); // envois sur l'affichage des cases roses
+				}
+				else {
+					creationCasesRoses(); // sinon on recommence le positionnement
+				}
+			}
+
+
+			function creationCasesBleues(){ // creation des positions des cases bleues
+				caseBleue = positionementJoueur();
+				//alert('case bleue ' + caseBleue); // debug
+				//alert($('#cel'+caseBleue).attr('class')); // debug
+				if ((caseBleue != joueur1.position) && (caseBleue != joueur2.position)&&($('#cel'+caseBleue).attr('class') != 'cellule rose')){ // si elles sont differente des joueurs et des roses
+					affichePositionsBleues();
+				}
+				else {
+					creationCasesBleues(); // sinon on recommence le positionement
+				}
+			}
+
+
+		
+
+// fonction écoute du clik sur les case jouables --------------------------------
+
+		function ecouteDuClick(){
+			//alert('ecoute du click');
+			$('.jouable').on('click', function (){ // on ecoute le click sur une case jouable
+				positionDuClick = $(this).text(); // on recupere la position cliquée par son text pour eviter un double id dans deplacement et permettre de faire de operation math dessus
+				//alert('position clickee ' + positionDuClick);
+				if(tourDuJoueur === 1){
+					$('.cellule').off('click'); // off supprime tous les gestionnaires écoutant le clic
+					deplacementJoueur1(positionDuClick); // on procéde au deplacement du joueur 1
+					affichePositions1();
+				}
+				else if (tourDuJoueur === 2){
+					$('.cellule').off('click'); // supprime tous les gestionnaires écoutant le clic
+					deplacementJoueur2(positionDuClick); // on procéde au deplacement du joueur 2
+					affichePositions2();
+					
+				}
+				else {
+					alert('erreur');
+				}
+			});
+		}
+
+// fonction tour du joueur ----------------------------------------------------------
+		function tourJoueur1(){ // fonction qui mets le tour de joueur
+				if (fin === 'non'){
+					//alert('fonction tour joueur sur joueur 1');
+					tourDuJoueur = 1; // on mets la variable tourDuJoueur à 1
+					$('#gauche').css('border', 'solid 2px LimeGreen');// mise en vert du coté joueur1.position pour signalé que c'est son tour de jouer
+					$('#droit').css('border', 'none');// on efface le cadre vert de joueur2
+					//alert('le joueur 1 est sur la case : ' + joueur1.position);
+					caseJouables(joueur1.position); // mets en gris les cases jouables par le joueur 1
+					ecouteDuClick();
+				}
+				else {
+					alert('fin du jeux');
+				}
+			}
+
+		function tourJoueur2(){
+				if (fin === 'non'){
+					//alert('fonction tour joueur sur joueur 2');
+					tourDuJoueur = 2; // on mets la variable tourDuJoueur à 2
+					$('#droit').css('border', 'solid 2px LimeGreen');// mise en vert du coté joueur2.position pour signalé que c'est son tour de jouer
+					$('#gauche').css('border', 'none');// on efface le cadre vert de joueur1
+					//alert('position du joueur2.position : ' + joueur2.position);
+					caseJouables(joueur2.position); // mets en gris les cases jouables par le joueur 2
+					ecouteDuClick();
+					}
+				else {
+					alert('fin du jeux');
+				}
+			}
+		
+		function testFinJeux(){
+			fin ='oui'; // on mets la variable fin de jeux à oui, elle sera changer uniquement si une case rose est detectée
+			for(i = 1 ; i<101; i++){ // on verifie chaque case
+				if ($('#cel'+ i).hasClass('rose')){ // si la class rose existe on met la variable fin à non
+					fin ='non'
+				}
+			}
+		}
+
+
+// fonction gestions  des case jouables -----------------------------------------------------------------
+
+
+		function verificationCaseBleue(){
+			if ($('#cel'+caseVerticale).hasClass('bleue')){ //si la case est bleu
+				$('#cel'+caseVerticale).removeClass('jouable'); // on suprime la class jouable
+				ordre = 'stop'; // on envois l'ordre de stopper la production de cases grise jouables
+			}
+		}
+
+		function caseJouables(positionJoueur){ // mets en gris les case jouable par le joueur
+			//alert('fonction cases jouable on les mets en gris');
+			for(i=10; i<40; (i=i+10)){ // cases verticales bas
+				caseVerticale = (positionJoueur + i);
+				$('#cel'+caseVerticale).addClass('jouable');
+				verificationCaseBleue();
+				if (ordre === 'stop'){ // si on reçois l'ordre se stopper
+					 i = 40 // on mets i en fin de boucle pour arreter le compteur
+					 ordre = ''; // on réinitialise l'ordre pour pouvoir le renvoyer si besoin
+				};
+			};
+			for(i=-10; i> -40; (i=i-10)){ // cases verticales haut
+				caseVerticale = (positionJoueur + i);
+				$('#cel'+caseVerticale).addClass('jouable');
+				verificationCaseBleue();
+				if (ordre === 'stop'){
+					 i = -40
+					 ordre = '';
+				};
+			};
+			for(i=1; i<4; (i++)){ // cases horizontales droites
+				caseVerticale = (positionJoueur + i);
+				$('#cel'+caseVerticale).addClass('jouable');
+				verificationCaseBleue();
+				if (ordre === 'stop'){
+					 i = 4
+					 ordre = '';
+				};
+			};
+			for(i=-1; i> -4; (i=i-1)){ // cases horizontales gauches
+				caseVerticale = (positionJoueur + i);
+				$('#cel'+caseVerticale).addClass('jouable');
+				verificationCaseBleue();
+				if (ordre === 'stop'){
+					 i = -4
+					 ordre = '';
+				};
+			};
+			//alert('fin case grises');
+		}
+
+
+		function effaceCasesGrises(positionInit){ // fonction effacement des cases jouables d'avants -----------
+			//alert('on efface les cases grises');
+			for(i=10; i<40; (i=i+10)){ // cases verticales bas
+			caseVerticale = (positionInit + i);
+			$('#cel'+caseVerticale).removeClass('jouable');
+			};
+			for(i=-10; i> -40; (i=i-10)){ // cases verticales haut
+			caseVerticale = (positionInit + i);
+			$('#cel'+caseVerticale).removeClass('jouable');
+			};
+			for(i=1; i<4; (i++)){ // cases horizontales droites
+			caseVerticale = (positionInit + i);
+			$('#cel'+caseVerticale).removeClass('jouable');
+			};
+			for(i=-1; i> -4; (i=i-1)){ // cases horizontales gauches
+			caseVerticale = (positionInit + i);
+			$('#cel'+caseVerticale).removeClass('jouable');
+			};
+		}
+// fonction deplacement du joueur -------------------------------------------------------
+
+		function deplacementJoueur1(positionDuClick){
+				//alert('deplacement du Joueur 1');
+				joueur1init = Number(joueur1.position) //on recupere la position initiale du joueur1.position et on la rends numerique
+				joueur1.position = Number(positionDuClick);// on mets la nouvelle position pour joueur 1
+				$('#cel'+joueur1init).removeClass('joueur1').addClass('cellule');// on efface la case noire initiale
+				effaceCasesGrises(joueur1init);// on efface les cases grises
+				$('#cel'+ joueur1.position).addClass('joueur1').removeClass('cellule'); // on affecte la class joueur1.position à la position de joueur
+				testRose(joueur1);// test si la case cliqué est rose
+				$('#score1').text(joueur1.score); // affichage du score
+				testFinJeux();
+				tourJoueur2();// on lance le tour du joueur 2
+			}
+			
+		function deplacementJoueur2(positionDuClick){				
+				//alert('deplacement du Joueur 2');
+				joueur2init = Number(joueur2.position) //on recupere la position initiale du joueur2.position et on la rends numerique
+				joueur2.position = Number(positionDuClick);// on mets la nouvelle position pour joueur 2 et on la rends numerique
+				$('#cel'+joueur2init).removeClass('joueur2').addClass('cellule');// on efface la case orange initiale
+				effaceCasesGrises(joueur2init);// on efface les cases grises
+				$('#cel'+ positionDuClick).addClass('joueur2').removeClass('cellule'); // on affecte la class joueur2.position à la position de joueur
+				testRose(joueur2);// test si la case cliqué est rose
+				$('#score2').text(joueur2.score); // affichage du score
+				testFinJeux();
+				tourJoueur1('tourJ1');// on lance le tour du joueur 1
+								
+			}
+
+		function testRose(joueur){ // on cherche si la nouvelle position prise par le joueur est rose
+			if ($('#cel'+ joueur.position).hasClass('rose')){ 
+				//alert('recuperer 1 rose');
+				joueur.score = joueur.score + 1;
+				$('#cel'+ joueur.position).removeClass('rose'); // on efface la class rose pour laisser la class joueur visible
+			}
+		}
+		
+
+// Lancement du jeux ----------------------------------------------------------------------------------
+
+
+		
+		for(i=1; i<11; i++){ //---------------------------création de la grille -------
+			$('#plateau').append('<tr id="ligne'+i +'"></tr>'); // on insert 10 lignes dans la balise tableau
+			for (o=1; o<11; o++){ // pour chaque ligne on insert 10 cellules
+				cel++; // on incrémente le numero de cellule
+				$('#ligne'+i).append('<td class="cellule" id="cel'+ cel +'">'+ cel + '<td>');
+			};
+		}
+
+
+		joueur1.position = positionementJoueur(); // on positionne le joueur 1
+		$('#cel'+joueur1.position).attr('class' , 'joueur1'); // on affecte la class joueur1.position à la position de joueur1
+		affichePositions1();
+
+		joueur2.position = positionementJoueur(); // on position le joueur 2
+		testPosition(); // on test la position pour etre sur qu'elle ne soit pas contigue à celle du joueur 1
+		affichePositions2();
+
+		
+		for (i=0; i<5; i++){ // on crée 5 cases roses
+			creationCasesRoses();
+		};
+
+		for (i=0; i<5; i++){ // on crée 5 cases bleues
+			creationCasesBleues();
+		};
+
+
+
+		$('#joueur1').click(function(){
+			tourJoueur1(); // demarage du jeux, on lance le tour du joueur1
+		});
+		$('#joueur2').click(function(){
+			tourJoueur2(); // demarage du jeux, on lance le tour du joueur1
+		});
+		
+
+
+});
+
+</script>
+
+</body>
+</html>
